@@ -1,5 +1,6 @@
 #include "gameobject.h"
 
-GameObject::GameObject(QObject *parent)
-    : QObject{parent}
-{}
+GameObject::GameObject(QGraphicsItem *parent)
+    : QObject(), QGraphicsPixmapItem(parent) {
+    // Constructor básico
+}
