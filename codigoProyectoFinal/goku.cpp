@@ -27,7 +27,7 @@ Goku::Goku(QGraphicsItem *parent) : GameObject(parent) {
 
     // Temporizador para animación
     QTimer* animTimer = new QTimer(this);
-    connect(animTimer, &QTimer::timeout, [this] {
+    connect(animTimer, &QTimer::timeout,this, [this]() {
         if(estado == WALKING) {
             currentFrame = (currentFrame + 1) % TOTAL_FRAMES;
             actualizarGraficos();

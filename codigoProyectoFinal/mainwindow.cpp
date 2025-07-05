@@ -46,56 +46,30 @@ void MainWindow::configurarEscena() {
 }
 
 void MainWindow::iniciarBucleJuego() {
-    // Configurar bucle del juego
     QTimer* gameTimer = new QTimer(this);
-    connect(gameTimer, &QTimer::timeout, [this]() {
+    connect(gameTimer, &QTimer::timeout, this, [this]() {
+        // Obtener UNA copia de los items por frame (eficiente)
+        const auto& currentItems = scene->items();
+
         // Fase 0: Actualización lógica
-        for (auto item : scene->items()) {
+        for (auto item : currentItems) {
             if (auto obj = dynamic_cast<GameObject*>(item)) {
                 obj->avanzar(0);
             }
         }
 
         // Fase 1: Actualización gráfica
-        for (auto item : scene->items()) {
+        for (auto item : currentItems) {
             if (auto obj = dynamic_cast<GameObject*>(item)) {
                 obj->avanzar(1);
             }
         }
 
-        // Actualizar la vista
         scene->update();
     });
-    gameTimer->start(16); // ≈60 FPS (1000ms/60 = 16.67ms)
+    gameTimer->start(16);
 }
 
 MainWindow::~MainWindow() {
     delete ui;
 }
-
-/*#include "mainwindow.h"
-#include "ui_mainwindow.h"
-
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
-{
-    ui->setupUi(this);
-    scene = new QGraphicsScene();
-    ui->graphicsView->setScene(scene);
-    QImage imagenFondo(":/img/Base.gif");
-    if (imagenFondo.isNull()) {
-        qDebug() << "La imagen no se cargó correctamente";
-    }
-    QBrush brochaFondo(imagenFondo);
-    ui->graphicsView->setBackgroundBrush(brochaFondo);
-    ui->graphicsView->scale(2,2);
-    scene->setSceneRect(600,245,420,170);
-
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
-}
-*/

@@ -25,10 +25,10 @@ private:
     const qreal VELOCIDAD_CAMINAR = 5;
     const qreal FUERZA_SALTO = -10;
 
-    // Sistema de sprite sheet (240x40 px, 8 frames)
+    // Sistema de sprite sheet
     QPixmap spriteSheet;
-    const int FRAME_WIDTH = 38;   // 240px / 8 frames = 30px
-    const int FRAME_HEIGHT = 50;  // Altura del sprite
+    const int FRAME_WIDTH = 38;
+    const int FRAME_HEIGHT = 50;
     int currentFrame = 0;
     const int TOTAL_FRAMES = 8;
     QVector<QPixmap> framesDerecha;
