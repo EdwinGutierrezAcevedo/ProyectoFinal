@@ -27,9 +27,10 @@ void MainWindow::configurarEscena() {
     ui->graphicsView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
     // Fondo panorámico (1184x150) en PNG
-    QPixmap imagenFondo(":/img/Base1.gif");
+    QPixmap imagenFondo(":/img/Base.gif");
     ui->graphicsView->setBackgroundBrush(QBrush(imagenFondo));
     ui->graphicsView->scale(2.5,2.5);
+
     // Ajustar relación de aspecto
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -39,39 +40,57 @@ void MainWindow::configurarEscena() {
     const int SCENE_HEIGHT = 600; // Alto extendido
 
     scene->setSceneRect(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
-    // Crear personaje principal (Goku) sobre el suelo
-    Goku* goku = new Goku();
+
+    // Crear personaje principal (Goku)
+    goku = new Goku(); // Guardar referencia como miembro de la clase
     goku->setPos(90, 90); // Posición inicial sobre el suelo
     scene->addItem(goku);
     goku->setFocus(); // Para recibir eventos de teclado
+
+    // Centrar inicialmente en Goku
+    ui->graphicsView->centerOn(goku);
+
     Enemigo* soldado = new Enemigo(Enemigo::SOLDADO, goku);
-    soldado->setPos(110, 90);
+    soldado->setPos(210, 90);
     scene->addItem(soldado);
 }
 
 void MainWindow::iniciarBucleJuego() {
     QTimer* gameTimer = new QTimer(this);
     connect(gameTimer, &QTimer::timeout, this, [this]() {
-        // Obtener UNA copia de los items por frame (eficiente)
-        const auto& currentItems = scene->items();
-
         // Fase 0: Actualización lógica
-        for (auto item : currentItems) {
+        for (auto item : scene->items()) {
             if (auto obj = dynamic_cast<GameObject*>(item)) {
                 obj->avanzar(0);
             }
         }
 
-        // Fase 1: Actualización gráfica
-        for (auto item : currentItems) {
+        // Fase 1: Detección de colisiones
+        for (auto item : scene->items()) {
+            if (auto obj = dynamic_cast<GameObject*>(item)) {
+                // Verificar colisiones con otros objetos
+                QList<QGraphicsItem*> itemsColisionados = obj->collidingItems();
+                for (auto otro : itemsColisionados) {
+                    if (auto otroObj = dynamic_cast<GameObject*>(otro)) {
+                        obj->manejarColision(otroObj);
+                    }
+                }
+            }
+        }
+
+        // Fase 2: Actualización gráfica
+        for (auto item : scene->items()) {
             if (auto obj = dynamic_cast<GameObject*>(item)) {
                 obj->avanzar(1);
             }
         }
 
+        // Centrar cámara en Goku (después de todas las actualizaciones)
+        ui->graphicsView->centerOn(goku);
+
         scene->update();
     });
-    gameTimer->start(16);
+    gameTimer->start(16);  // ~60 FPS
 }
 
 MainWindow::~MainWindow() {

@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QGraphicsScene>
-
+#include "goku.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -15,12 +15,16 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+
 private:
     Ui::MainWindow *ui;
     QGraphicsScene *scene;
+    Goku* goku;
     void ajustarVista();
     void configurarEscena();
     void iniciarBucleJuego();
+    void centrarCamaraEnGoku();
+
 };
 
 #endif // MAINWINDOW_H
