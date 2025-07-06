@@ -1,10 +1,10 @@
 #ifndef ENEMIGO_H
 #define ENEMIGO_H
 
-#include "gameobject.h"
+#include "personaje.h"
 #include "goku.h"
 
-class Enemigo : public GameObject {
+class Enemigo : public Personaje {
     Q_OBJECT
 public:
     enum Tipo { SOLDADO, JEFE };
@@ -12,20 +12,19 @@ public:
     explicit Enemigo(Tipo tipo, Goku* goku, QGraphicsItem *parent = nullptr);
     void avanzar(int fase) override;
     void manejarColision(GameObject* otro) override;
-
     void lanzarGranada();
 
 protected:
+    virtual void actualizarIA(qreal deltaTime);
+
+private:
+    void cargarSprites() override;
+
     Tipo tipoEnemigo;
-    Goku* gokuRef;  // Referencia a Goku para apuntar
-    qreal tiempoEntreAtaques = 3.0;  // Segundos
+    Goku* gokuRef;
+    qreal tiempoEntreAtaques = 3.0;
     qreal tiempoAcumulado = 0.0;
     int salud = 100;
-
-    virtual void actualizarIA(qreal deltaTime);
 };
 
 #endif // ENEMIGO_H
-
-
-//Weight= 54, hight= 50
