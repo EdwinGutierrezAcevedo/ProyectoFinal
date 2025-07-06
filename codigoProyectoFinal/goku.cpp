@@ -4,30 +4,33 @@
 #include <QDebug>
 #include <QPainter>
 
-Goku::Goku(QGraphicsItem *parent) : GameObject(parent) {
-    // Cargar sprite sheet completo (240x40 px)
+
+Goku::Goku(QGraphicsItem *parent)
+    : Personaje(parent) {
+    // Configuración específica de Goku
+    GRAVEDAD = 0.5;
+    VELOCIDAD_CAMINAR = 5;
+    FUERZA_SALTO = -10;
+    FRAME_WIDTH = 38;
+    FRAME_HEIGHT = 50;
+    TOTAL_FRAMES = 8;
+
+    // Cargar sprite sheet
     spriteSheet = QPixmap(":/img/Goku/GokuCorriendo.png");
 
-    // Validar carga
     if(spriteSheet.isNull()) {
         qDebug() << "Error: No se pudo cargar sprite sheet de Goku";
-        // Crear placeholder rojo para debug
         spriteSheet = QPixmap(FRAME_WIDTH, FRAME_HEIGHT);
         spriteSheet.fill(Qt::red);
     }
 
-    // Precargar todos los frames
     cargarSprites();
-
-    // Configurar sprite inicial
     setPixmap(framesDerecha.first());
-
-    // Configurar para recibir eventos de teclado
     setFlag(QGraphicsItem::ItemIsFocusable);
 
     // Temporizador para animación
     QTimer* animTimer = new QTimer(this);
-    connect(animTimer, &QTimer::timeout,this, [this]() {
+    connect(animTimer, &QTimer::timeout, this, [this]() {
         if(estado == WALKING) {
             currentFrame = (currentFrame + 1) % TOTAL_FRAMES;
             actualizarGraficos();
@@ -37,13 +40,12 @@ Goku::Goku(QGraphicsItem *parent) : GameObject(parent) {
 }
 
 void Goku::cargarSprites() {
+    framesDerecha.clear();
+    framesIzquierda.clear();
+
     for(int i = 0; i < TOTAL_FRAMES; i++) {
         int frameX = i * FRAME_WIDTH;
-
-        // Recortar frame del sprite sheet
         QPixmap frame = spriteSheet.copy(frameX, 0, FRAME_WIDTH, FRAME_HEIGHT);
-
-        // Guardar versión derecha e izquierda
         framesDerecha.append(frame);
         framesIzquierda.append(frame.transformed(QTransform().scale(-1, 1)));
     }
@@ -92,7 +94,7 @@ void Goku::actualizarGraficos() {
     if(currentFrame < 0 || currentFrame >= framesDerecha.size()) return;
 
     // Seleccionar frame basado en dirección
-    if(mirandoDerecha) {
+    if(direccion == DERECHA) {
         setPixmap(framesDerecha[currentFrame]);
     } else {
         setPixmap(framesIzquierda[currentFrame]);
@@ -104,17 +106,17 @@ void Goku::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_Left:
         velocidad.setX(-VELOCIDAD_CAMINAR);
         estado = WALKING;
-        if(mirandoDerecha) {
-            mirandoDerecha = false;
-            actualizarGraficos(); // Actualizar inmediatamente
+        if(direccion == DERECHA) {
+            direccion = IZQUIERDA;
+            actualizarGraficos();
         }
         break;
     case Qt::Key_Right:
         velocidad.setX(VELOCIDAD_CAMINAR);
         estado = WALKING;
-        if(!mirandoDerecha) {
-            mirandoDerecha = true;
-            actualizarGraficos(); // Actualizar inmediatamente
+        if(direccion == IZQUIERDA) {
+            direccion = DERECHA;
+            actualizarGraficos();
         }
         break;
     case Qt::Key_Space:
@@ -126,7 +128,6 @@ void Goku::keyPressEvent(QKeyEvent *event) {
         break;
     case Qt::Key_A:
         estado = ATTACKING;
-        // Lógica de ataque (implementar después)
         qDebug() << "Goku ataca!";
         break;
     }
@@ -147,4 +148,9 @@ void Goku::keyReleaseEvent(QKeyEvent *event) {
         }
         break;
     }
+}
+
+void Goku::manejarColision(GameObject* otro) {
+    // Implementar lógica de colisión específica de Goku
+    // (Ej: recibir daño, recolectar objetos, etc)
 }
