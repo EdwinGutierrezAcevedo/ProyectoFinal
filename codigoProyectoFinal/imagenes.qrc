@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>img/Base1.gif</file>
         <file>img/Goku/GokuCorriendo.png</file>
+        <file>img/Soldado/SoldadoCorriendo.png</file>
     </qresource>
 </RCC>

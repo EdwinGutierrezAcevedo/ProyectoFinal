@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "goku.h"
+#include "enemigo.h"
 #include "gameobject.h"
 #include <QTimer>
 #include <QDebug>
@@ -43,6 +44,9 @@ void MainWindow::configurarEscena() {
     goku->setPos(90, 90); // Posición inicial sobre el suelo
     scene->addItem(goku);
     goku->setFocus(); // Para recibir eventos de teclado
+    Enemigo* soldado = new Enemigo(Enemigo::SOLDADO, goku);
+    soldado->setPos(110, 90);
+    scene->addItem(soldado);
 }
 
 void MainWindow::iniciarBucleJuego() {
