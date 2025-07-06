@@ -14,7 +14,7 @@ Enemigo::Enemigo(Tipo tipo, Goku* goku, QGraphicsItem *parent)
         salud = 80;
         break;
     case JEFE:
-        setPixmap(QPixmap(":/img/Soldado/SoldadoCorriendo.png"));
+        setPixmap(QPixmap(":/img/Soldado/SoldadoCorriendo1.png"));
         salud = 200;
         tiempoEntreAtaques = 1.5;
         break;

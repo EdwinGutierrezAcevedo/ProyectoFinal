@@ -15,6 +15,7 @@ SOURCES += \
     goku.cpp \
     main.cpp \
     mainwindow.cpp \
+    nivel.cpp \
     personaje.cpp
 
 HEADERS += \
@@ -23,6 +24,7 @@ HEADERS += \
     gameobject.h \
     goku.h \
     mainwindow.h \
+    nivel.h \
     personaje.h
 
 FORMS += \

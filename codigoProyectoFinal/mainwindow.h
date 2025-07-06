@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include "goku.h"
+#include "nivel.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -24,35 +25,11 @@ private:
     void configurarEscena();
     void iniciarBucleJuego();
     void centrarCamaraEnGoku();
-
+    Nivel* nivelActual;
+    QList<QObject*> elementosTransitorios; // Para guardar elementos de transición
+private slots:
+    void mostrarCompletadoNivel();
+    void avanzarSiguienteNivel();
 };
 
 #endif // MAINWINDOW_H
-
-/*#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
-
-#include <QMainWindow>
-#include <QGraphicsScene>
-
-QT_BEGIN_NAMESPACE
-namespace Ui {
-class MainWindow;
-}
-QT_END_NAMESPACE
-
-class MainWindow : public QMainWindow
-{
-    Q_OBJECT
-
-public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
-
-private:
-    Ui::MainWindow *ui;
-    QGraphicsScene *scene;
-
-};
-#endif // MAINWINDOW_H
-*/
