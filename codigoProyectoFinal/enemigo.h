@@ -16,10 +16,10 @@ public:
 
 protected:
     virtual void actualizarIA(qreal deltaTime);
-
-private:
     void cargarSprites() override;
-
+    void cargarSpritesAtaque() override;
+    void cargarSpritesIdle() override;
+private:
     Tipo tipoEnemigo;
     Goku* gokuRef;
     qreal tiempoEntreAtaques = 3.0;
