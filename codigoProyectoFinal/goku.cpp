@@ -4,7 +4,6 @@
 #include <QDebug>
 #include <QPainter>
 
-
 Goku::Goku(QGraphicsItem *parent)
     : Personaje(parent) {
     // Configuración específica de Goku
@@ -14,29 +13,43 @@ Goku::Goku(QGraphicsItem *parent)
     FRAME_WIDTH = 38;
     FRAME_HEIGHT = 50;
     TOTAL_FRAMES = 8;
+    TOTAL_ATTACK_FRAMES = 4;
+    TOTAL_IDLE_FRAMES = 4;
 
     // Cargar sprite sheet
     spriteSheet = QPixmap(":/img/Goku/GokuCorriendo.png");
+    // Cargar sprites de ataque
+    attackSpriteSheet = QPixmap(":/img/Goku/GokuGolpeando.png");
+    // Cargar sprites de IDLE
+    idleSpriteSheet = QPixmap(":/img/Goku/GokuIdle.png");
 
     if(spriteSheet.isNull()) {
         qDebug() << "Error: No se pudo cargar sprite sheet de Goku";
         spriteSheet = QPixmap(FRAME_WIDTH, FRAME_HEIGHT);
         spriteSheet.fill(Qt::red);
     }
+    if(attackSpriteSheet.isNull()) {
+        qDebug() << "Error: No se pudo cargar sprite sheet de ataque de Goku";
+        attackSpriteSheet = QPixmap(FRAME_WIDTH, FRAME_HEIGHT);
+        attackSpriteSheet.fill(Qt::green);
+    }
 
     cargarSprites();
+    cargarSpritesAtaque();
     setPixmap(framesDerecha.first());
     setFlag(QGraphicsItem::ItemIsFocusable);
 
     // Temporizador para animación
     QTimer* animTimer = new QTimer(this);
     connect(animTimer, &QTimer::timeout, this, [this]() {
-        if(estado == WALKING) {
+        // Avanzar animación solo para caminar e idle
+        if(estado == WALKING || estado == IDLE) {
             currentFrame = (currentFrame + 1) % TOTAL_FRAMES;
             actualizarGraficos();
         }
     });
     animTimer->start(80); // 80ms = 12.5 FPS
+    iniciarAnimacionIdle();
 }
 
 void Goku::cargarSprites() {
@@ -48,6 +61,30 @@ void Goku::cargarSprites() {
         QPixmap frame = spriteSheet.copy(frameX, 0, FRAME_WIDTH, FRAME_HEIGHT);
         framesDerecha.append(frame);
         framesIzquierda.append(frame.transformed(QTransform().scale(-1, 1)));
+    }
+}
+
+void Goku::cargarSpritesAtaque() {
+    attackFramesDerecha.clear();
+    attackFramesIzquierda.clear();
+
+    for(int i = 0; i < TOTAL_ATTACK_FRAMES; i++) {
+        int frameX = i * FRAME_WIDTH;
+        QPixmap frame = attackSpriteSheet.copy(frameX, 0, FRAME_WIDTH, FRAME_HEIGHT);
+        attackFramesDerecha.append(frame);
+        attackFramesIzquierda.append(frame.transformed(QTransform().scale(-1, 1)));
+    }
+}
+
+void Goku::cargarSpritesIdle() {
+    idleFramesDerecha.clear();
+    idleFramesIzquierda.clear();
+
+    for(int i = 0; i < TOTAL_IDLE_FRAMES; i++) {
+        int frameX = i * FRAME_WIDTH;
+        QPixmap frame = idleSpriteSheet.copy(frameX, 0, FRAME_WIDTH, FRAME_HEIGHT);
+        idleFramesDerecha.append(frame);
+        idleFramesIzquierda.append(frame.transformed(QTransform().scale(-1, 1)));
     }
 }
 
@@ -87,48 +124,53 @@ void Goku::actualizarLogica() {
         currentFrame = 0;
         actualizarGraficos();
     }
-}
 
-void Goku::actualizarGraficos() {
-    // Solo actualizar si tenemos frames válidos
-    if(currentFrame < 0 || currentFrame >= framesDerecha.size()) return;
+    if(velocidad.x() == 0 && estado == WALKING) {
+        estado = IDLE;
+        idleFrame = 0; // Reiniciar animación idle
+        actualizarGraficos();
+    }
 
-    // Seleccionar frame basado en dirección
-    if(direccion == DERECHA) {
-        setPixmap(framesDerecha[currentFrame]);
-    } else {
-        setPixmap(framesIzquierda[currentFrame]);
+    if(estado == JUMPING && velocidad.x() == 0) {
+        estado = IDLE;
     }
 }
 
 void Goku::keyPressEvent(QKeyEvent *event) {
     switch(event->key()) {
     case Qt::Key_Left:
-        velocidad.setX(-VELOCIDAD_CAMINAR);
-        estado = WALKING;
-        if(direccion == DERECHA) {
-            direccion = IZQUIERDA;
-            actualizarGraficos();
+        if(!isAttacking) {
+            velocidad.setX(-VELOCIDAD_CAMINAR);
+            estado = WALKING;
+            if(direccion == DERECHA) {
+                direccion = IZQUIERDA;
+                actualizarGraficos();
+            }
         }
         break;
     case Qt::Key_Right:
-        velocidad.setX(VELOCIDAD_CAMINAR);
-        estado = WALKING;
-        if(direccion == IZQUIERDA) {
-            direccion = DERECHA;
-            actualizarGraficos();
+        if(!isAttacking) {
+            velocidad.setX(VELOCIDAD_CAMINAR);
+            estado = WALKING;
+            if(direccion == IZQUIERDA) {
+                direccion = DERECHA;
+                actualizarGraficos();
+            }
         }
         break;
     case Qt::Key_Space:
-        if(enSuelo) {
+        if(enSuelo && !isAttacking) {
             velocidad.setY(FUERZA_SALTO);
             enSuelo = false;
             estado = JUMPING;
         }
         break;
     case Qt::Key_A:
-        estado = ATTACKING;
-        qDebug() << "Goku ataca!";
+        if(!isAttacking) {
+            iniciarAtaque();
+            // Forzar actualización inmediata
+            actualizarGraficos();
+        }
         break;
     }
 }
@@ -140,12 +182,6 @@ void Goku::keyReleaseEvent(QKeyEvent *event) {
         break;
     case Qt::Key_Right:
         if(velocidad.x() > 0) velocidad.setX(0);
-        break;
-    case Qt::Key_A:
-        if(estado == ATTACKING) {
-            estado = IDLE;
-            actualizarGraficos();
-        }
         break;
     }
 }
