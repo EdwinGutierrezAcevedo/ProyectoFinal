@@ -10,21 +10,25 @@ Enemigo::Enemigo(Tipo tipo, Goku* goku, QGraphicsItem *parent)
     if (tipo == SOLDADO) {
         GRAVEDAD = 0.0;  // Soldados no necesitan gravedad
         VELOCIDAD_CAMINAR = 1.5;
-        FRAME_WIDTH = 35;
+        FRAME_WIDTH = 55;
         FRAME_HEIGHT = 45;
         salud = 80;
+        TOTAL_IDLE_FRAMES = 4;
     } else { // JEFE
         GRAVEDAD = 0.0;
         VELOCIDAD_CAMINAR = 1.0;
-        FRAME_WIDTH = 60;
-        FRAME_HEIGHT = 70;
+        FRAME_WIDTH = 55;
+        FRAME_HEIGHT = 45;
         salud = 200;
         tiempoEntreAtaques = 1.5;
+        TOTAL_IDLE_FRAMES = 4;
     }
 
     TOTAL_FRAMES = 1;  // Solo 1 frame por defecto
 
     cargarSprites();
+    cargarSpritesAtaque();
+    cargarSpritesIdle();
     setPixmap(framesDerecha.first());
 
     // Dirección inicial
@@ -36,6 +40,7 @@ Enemigo::Enemigo(Tipo tipo, Goku* goku, QGraphicsItem *parent)
         actualizarIA(0.1);  // Actualizar IA cada 100ms
     });
     iaTimer->start(100);
+    iniciarAnimacionIdle();
 }
 
 void Enemigo::cargarSprites() {
@@ -63,6 +68,64 @@ void Enemigo::cargarSprites() {
     framesDerecha.append(baseSprite);
     QPixmap flipped = baseSprite.transformed(QTransform().scale(-1, 1));
     framesIzquierda.append(flipped);
+}
+
+void Enemigo::cargarSpritesAtaque() {
+    attackFramesDerecha.clear();
+    attackFramesIzquierda.clear();
+
+    QPixmap attackSprite;
+    switch(tipoEnemigo) {
+    case SOLDADO:
+        attackSprite = QPixmap(":/img/Soldado/SoldadoAtacando.png");
+        TOTAL_ATTACK_FRAMES = 6;
+        break;
+    case JEFE:
+        attackSprite = QPixmap(":/img/Soldado/SoldadoAtacando.png");
+        TOTAL_ATTACK_FRAMES = 6;
+        break;
+    }
+
+    if(attackSprite.isNull()) {
+        qDebug() << "Error: No se pudo cargar sprite de ataque de enemigo";
+        attackSprite = QPixmap(FRAME_WIDTH, FRAME_HEIGHT);
+        attackSprite.fill(Qt::green);
+    }
+
+    for(int i = 0; i < TOTAL_ATTACK_FRAMES; i++) {
+        int frameX = i * FRAME_WIDTH;
+        QPixmap frame = attackSprite.copy(frameX, 0, FRAME_WIDTH, FRAME_HEIGHT);
+        attackFramesDerecha.append(frame);
+        attackFramesIzquierda.append(frame.transformed(QTransform().scale(-1, 1)));
+    }
+}
+
+void Enemigo::cargarSpritesIdle() {
+    idleFramesDerecha.clear();
+    idleFramesIzquierda.clear();
+
+    QPixmap idleSprite;
+    switch(tipoEnemigo) {
+    case SOLDADO:
+        idleSprite = QPixmap(":/img/Soldado/SoldierIdle.png");
+        break;
+    case JEFE:
+        idleSprite = QPixmap(":/img/Soldado/SoldierIdle.png");
+        break;
+    }
+
+    if(idleSprite.isNull()) {
+        qDebug() << "Error: No se pudo cargar sprite idle de enemigo";
+        idleSprite = QPixmap(FRAME_WIDTH, FRAME_HEIGHT);
+        idleSprite.fill(Qt::yellow);
+    }
+
+    for(int i = 0; i < TOTAL_IDLE_FRAMES; i++) {
+        int frameX = i * FRAME_WIDTH;
+        QPixmap frame = idleSprite.copy(frameX, 0, FRAME_WIDTH, FRAME_HEIGHT);
+        idleFramesDerecha.append(frame);
+        idleFramesIzquierda.append(frame.transformed(QTransform().scale(-1, 1)));
+    }
 }
 
 void Enemigo::avanzar(int fase) {
@@ -102,6 +165,14 @@ void Enemigo::actualizarIA(qreal deltaTime) {
     } else {
         // Detenerse si está cerca
         velocidad.setX(0);
+        if(tiempoAcumulado >= tiempoEntreAtaques) {
+            iniciarAtaque();
+            tiempoAcumulado = 0;
+        }else {
+            // Detenerse si está cerca
+            velocidad.setX(0);
+            estado = IDLE; // Cambiar a estado IDLE
+        }
     }
 }
 
@@ -121,3 +192,8 @@ void Enemigo::manejarColision(GameObject* otro) {
         deleteLater();
     }
 }
+
+
+
+
+
