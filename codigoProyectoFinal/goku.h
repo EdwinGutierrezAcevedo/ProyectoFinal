@@ -16,8 +16,11 @@ public:
 
 private:
     void actualizarLogica() override;
-    void actualizarGraficos() override;
     void cargarSprites() override;
+    void cargarSpritesAtaque() override;
+    void cargarSpritesIdle() override;
 };
 
 #endif // GOKU_H
+
+
