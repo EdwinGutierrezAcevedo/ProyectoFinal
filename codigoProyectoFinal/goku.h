@@ -19,6 +19,7 @@ private:
     void cargarSprites() override;
     void cargarSpritesAtaque() override;
     void cargarSpritesIdle() override;
+    void cargarSpritesCaminata() override;
 };
 
 #endif // GOKU_H

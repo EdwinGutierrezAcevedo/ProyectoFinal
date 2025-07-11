@@ -19,12 +19,14 @@ protected:
     void cargarSprites() override;
     void cargarSpritesAtaque() override;
     void cargarSpritesIdle() override;
+    void cargarSpritesCaminata() override;
 private:
     Tipo tipoEnemigo;
     Goku* gokuRef;
     qreal tiempoEntreAtaques = 3.0;
     qreal tiempoAcumulado = 0.0;
     int salud = 100;
+    QTimer* walkAnimTimer = nullptr;
 };
 
 #endif // ENEMIGO_H

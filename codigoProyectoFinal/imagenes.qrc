@@ -3,7 +3,10 @@
         <file>img/Base1.gif</file>
         <file>img/Goku/GokuCorriendo.png</file>
         <file>img/Soldado/SoldadoCorriendo.png</file>
-        <file>img/Soldado/SoldadoCorriendo1.png</file>
         <file>img/Base.gif</file>
+        <file>img/Soldado/SoldierIdle.png</file>
+        <file>img/Soldado/SoldadoAtacando.png</file>
+        <file>img/Goku/GokuIdle.png</file>
+        <file>img/Goku/GokuAtacando.png</file>
     </qresource>
 </RCC>

@@ -10,7 +10,7 @@ Goku::Goku(QGraphicsItem *parent)
     GRAVEDAD = 0.5;
     VELOCIDAD_CAMINAR = 5;
     FUERZA_SALTO = -10;
-    FRAME_WIDTH = 38;
+    FRAME_WIDTH = 37;
     FRAME_HEIGHT = 50;
     TOTAL_FRAMES = 8;
     TOTAL_ATTACK_FRAMES = 4;
@@ -19,7 +19,7 @@ Goku::Goku(QGraphicsItem *parent)
     // Cargar sprite sheet
     spriteSheet = QPixmap(":/img/Goku/GokuCorriendo.png");
     // Cargar sprites de ataque
-    attackSpriteSheet = QPixmap(":/img/Goku/GokuGolpeando.png");
+    attackSpriteSheet = QPixmap(":/img/Goku/GokuAtacando.png");
     // Cargar sprites de IDLE
     idleSpriteSheet = QPixmap(":/img/Goku/GokuIdle.png");
 
@@ -36,6 +36,8 @@ Goku::Goku(QGraphicsItem *parent)
 
     cargarSprites();
     cargarSpritesAtaque();
+    cargarSpritesCaminata() ;
+    cargarSpritesIdle();
     setPixmap(framesDerecha.first());
     setFlag(QGraphicsItem::ItemIsFocusable);
 
@@ -52,9 +54,16 @@ Goku::Goku(QGraphicsItem *parent)
     iniciarAnimacionIdle();
 }
 
-void Goku::cargarSprites() {
+void Goku::cargarSpritesCaminata() {
     framesDerecha.clear();
     framesIzquierda.clear();
+
+    QPixmap spriteSheet = QPixmap(":/img/Goku/GokuCorriendo.png");
+    if(spriteSheet.isNull()) {
+        qDebug() << "Error: No se pudo cargar sprite sheet de caminata de Goku";
+        spriteSheet = QPixmap(FRAME_WIDTH, FRAME_HEIGHT);
+        spriteSheet.fill(Qt::red);
+    }
 
     for(int i = 0; i < TOTAL_FRAMES; i++) {
         int frameX = i * FRAME_WIDTH;
@@ -62,6 +71,10 @@ void Goku::cargarSprites() {
         framesDerecha.append(frame);
         framesIzquierda.append(frame.transformed(QTransform().scale(-1, 1)));
     }
+}
+
+void Goku::cargarSprites() {
+ qDebug() << "cargarSprites() llamado - usar cargarSpritesCaminata() en su lugar";
 }
 
 void Goku::cargarSpritesAtaque() {
@@ -74,6 +87,7 @@ void Goku::cargarSpritesAtaque() {
         attackFramesDerecha.append(frame);
         attackFramesIzquierda.append(frame.transformed(QTransform().scale(-1, 1)));
     }
+
 }
 
 void Goku::cargarSpritesIdle() {
@@ -86,6 +100,7 @@ void Goku::cargarSpritesIdle() {
         idleFramesDerecha.append(frame);
         idleFramesIzquierda.append(frame.transformed(QTransform().scale(-1, 1)));
     }
+    qDebug() << "cargarSprites() llamado - usar cargarSpritesCaminata() en su lugar";
 }
 
 void Goku::avanzar(int fase) {
@@ -107,7 +122,7 @@ void Goku::actualizarLogica() {
     setPos(x() + velocidad.x(), y() + velocidad.y());
 
     // Verificar colisión con suelo
-    if(y() > 90) { // Ajustado a la nueva escena
+    if(y() >= 90) { // Ajustado a la nueva escena
         setY(90);
         enSuelo = true;
         velocidad.setY(0);

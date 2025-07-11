@@ -51,6 +51,7 @@ void MainWindow::configurarEscena() {
 
     // Crear personaje principal (Goku)
     goku = new Goku();
+    qDebug() << "se creo goku";
     goku->setPos(90, 90);
     scene->addItem(goku);
     goku->setFocus();

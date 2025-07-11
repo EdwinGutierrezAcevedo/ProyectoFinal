@@ -10,25 +10,26 @@ Enemigo::Enemigo(Tipo tipo, Goku* goku, QGraphicsItem *parent)
     if (tipo == SOLDADO) {
         GRAVEDAD = 0.0;  // Soldados no necesitan gravedad
         VELOCIDAD_CAMINAR = 1.5;
-        FRAME_WIDTH = 55;
-        FRAME_HEIGHT = 45;
+        FRAME_WIDTH = 53;
+        FRAME_HEIGHT = 55;
         salud = 80;
         TOTAL_IDLE_FRAMES = 4;
+        TOTAL_FRAMES = 8;
     } else { // JEFE
         GRAVEDAD = 0.0;
         VELOCIDAD_CAMINAR = 1.0;
-        FRAME_WIDTH = 55;
-        FRAME_HEIGHT = 45;
+        FRAME_WIDTH = 53;
+        FRAME_HEIGHT = 55;
         salud = 200;
         tiempoEntreAtaques = 1.5;
         TOTAL_IDLE_FRAMES = 4;
+        TOTAL_FRAMES = 8;
     }
-
-    TOTAL_FRAMES = 1;  // Solo 1 frame por defecto
 
     cargarSprites();
     cargarSpritesAtaque();
     cargarSpritesIdle();
+    cargarSpritesCaminata();
     setPixmap(framesDerecha.first());
 
     // Dirección inicial
@@ -40,34 +41,53 @@ Enemigo::Enemigo(Tipo tipo, Goku* goku, QGraphicsItem *parent)
         actualizarIA(0.1);  // Actualizar IA cada 100ms
     });
     iaTimer->start(100);
+    // Temporizador para animación de caminata (solo soldados)
+    if (tipoEnemigo == SOLDADO) {
+        walkAnimTimer = new QTimer(this);
+        connect(walkAnimTimer, &QTimer::timeout, this, [this]() {
+            if (estado == WALKING) {
+                currentFrame = (currentFrame + 1) % TOTAL_FRAMES;
+                actualizarGraficos();
+            }
+        });
+        walkAnimTimer->start(100); // Velocidad de animación: 10 FPS
+    }
+
+    // Iniciar animación idle
     iniciarAnimacionIdle();
 }
 
 void Enemigo::cargarSprites() {
+qDebug() << "cargarSprites() llamado - usar cargarSpritesCaminata() en su lugar";
+}
+
+void Enemigo::cargarSpritesCaminata() {
     framesDerecha.clear();
     framesIzquierda.clear();
 
-    // Cargar sprite según tipo
     QPixmap baseSprite;
     switch(tipoEnemigo) {
     case SOLDADO:
-        baseSprite = QPixmap(":/img/Soldado/SoldadoCorriendo1.png");
+        baseSprite = QPixmap(":/img/Soldado/SoldadoCorriendo.png"); // Nueva imagen con 8 sprites
         break;
     case JEFE:
-        baseSprite = QPixmap(":/img/Soldado/SoldadoCorriendo1.png");
+        baseSprite = QPixmap(":/img/Soldado/SoldadoCorriendo.png");
         break;
     }
 
     if(baseSprite.isNull()) {
-        qDebug() << "Error: No se pudo cargar sprite de enemigo";
+        qDebug() << "Error: No se pudo cargar sprite de caminata de enemigo";
         baseSprite = QPixmap(FRAME_WIDTH, FRAME_HEIGHT);
         baseSprite.fill(Qt::blue);
     }
 
-    // Si solo tenemos 1 frame
-    framesDerecha.append(baseSprite);
-    QPixmap flipped = baseSprite.transformed(QTransform().scale(-1, 1));
-    framesIzquierda.append(flipped);
+    // Cargar todos los frames de caminata
+    for(int i = 0; i < TOTAL_FRAMES; i++) {
+        int frameX = i * FRAME_WIDTH;
+        QPixmap frame = baseSprite.copy(frameX, 0, FRAME_WIDTH, FRAME_HEIGHT);
+        framesDerecha.append(frame);
+        framesIzquierda.append(frame.transformed(QTransform().scale(-1, 1)));
+    }
 }
 
 void Enemigo::cargarSpritesAtaque() {
@@ -159,6 +179,8 @@ void Enemigo::actualizarIA(qreal deltaTime) {
         // Establecer velocidad
         qreal direccionX = (dx > 0) ? 1.0 : -1.0;
         velocidad.setX(direccionX * VELOCIDAD_CAMINAR);
+
+        estado=WALKING;
 
         // Actualizar gráficos si cambió la dirección
         actualizarGraficos();

@@ -26,7 +26,7 @@ public:
     virtual void iniciarAtaque();
     virtual void cargarSpritesAtaque() = 0;  // Obligatorio para personajes atacantes
     virtual void cargarSpritesIdle() = 0;
-
+    virtual void cargarSpritesCaminata()=0;
     virtual void iniciarAnimacionIdle();
 
 

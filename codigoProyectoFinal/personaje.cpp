@@ -42,6 +42,16 @@ void Personaje::actualizarGraficos() {
         return;
     }
 
+    // Manejar gráficos de caminata
+    if(estado == WALKING && !framesDerecha.isEmpty()) {
+        if(direccion == DERECHA) {
+            setPixmap(framesDerecha[currentFrame]);
+        } else {
+            setPixmap(framesIzquierda[currentFrame]);
+        }
+        return;
+    }
+
     if(estado == IDLE && !idleFramesDerecha.isEmpty()) {
         if(direccion == DERECHA) {
             setPixmap(idleFramesDerecha[idleFrame]);
