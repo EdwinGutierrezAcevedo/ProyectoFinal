@@ -32,7 +32,6 @@ private:
 private slots:
     void mostrarCompletadoNivel();
     void avanzarSiguienteNivel();
-    void actualizarPuntaje();
 };
 
 #endif // MAINWINDOW_H

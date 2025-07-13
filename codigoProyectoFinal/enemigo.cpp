@@ -58,6 +58,10 @@ Enemigo::Enemigo(Tipo tipo, Goku* goku, QGraphicsItem *parent)
     // Iniciar animación idle
     iniciarAnimacionIdle();
     connect(this, &Personaje::ataqueTerminado, this, &Enemigo::lanzarGranadaDespuesDeAtaque);
+
+    m_timerGolpe = new QTimer(this);
+    m_timerGolpe->setSingleShot(true);
+    connect(m_timerGolpe, &QTimer::timeout, this, &Enemigo::volverASpriteNormal);
 }
 
 /*
@@ -225,12 +229,43 @@ void Enemigo::lanzarGranadaDespuesDeAtaque() {
 }
 
 void Enemigo::recibirDano(qreal dano) {
-    salud -= dano;
-    if(salud <= 0) {
-        emit eliminado();  // Emitir señal antes de eliminar
+    salud -= dano;  // 'salud' es miembro de Personaje
+
+    // Activar estado de golpeado
+    m_golpeado = true;
+
+    // Cambiar temporalmente a sprite de golpeado
+    if (tipoEnemigo == SOLDADO) {
+        // Guardar sprite actual
+        QPixmap original = pixmap();
+
+        // Cambiar a sprite golpeado
+        setPixmap(QPixmap(":/img/Soldado/SoldierGolpeado.png"));
+        setTransformOriginPoint(boundingRect().center());
+
+        // Restaurar sprite original después de un breve tiempo
+        QTimer::singleShot(300, this, [this, original]() {
+            if (salud > 0) setPixmap(original);
+        });
+    } else {
+        // Misma lógica para JEFE...
+    }
+
+    // Iniciar temporizador para volver a normal
+    if (m_timerGolpe && !m_timerGolpe->isActive()) {
+        m_timerGolpe->start(200);
+    }
+
+    if (salud <= 0) {
+        emit eliminado();
         scene()->removeItem(this);
         deleteLater();
     }
+}
+void Enemigo::volverASpriteNormal() {
+    m_golpeado = false;
+    // Al actualizar los gráficos se volverá al sprite normal
+    actualizarGraficos();
 }
 
 // Modifica manejarColision para usar nuevo sistema:

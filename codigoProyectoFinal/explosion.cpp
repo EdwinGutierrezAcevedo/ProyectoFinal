@@ -35,7 +35,7 @@ void Explosion::expandir() {
     }
 
     // Actualizar tamaño visual
-    setPixmap(QPixmap(":/img/explosion.png").scaled(m_radioActual * 2, m_radioActual * 2));
+    setPixmap(QPixmap(":/img/explosion.png").scaled(m_radioActual * 1.5, m_radioActual*1.5 ));
     setOffset(-m_radioActual, -m_radioActual); // Centrar
 
     // Verificar colisiones con objetos en la escena

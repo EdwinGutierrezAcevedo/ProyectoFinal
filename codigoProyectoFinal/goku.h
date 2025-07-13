@@ -21,6 +21,17 @@ private:
     void cargarSpritesAtaque() override;
     void cargarSpritesIdle() override;
     void cargarSpritesCaminata() override;
+
+    bool m_golpeado = false;
+    QTimer* m_timerGolpe = nullptr;
+    QPixmap m_spriteNormal;
+
+    QPointF m_recoilOffset;  // Almacenar desplazamiento de retroceso
+
+    // Nuevo estado de muerte
+    bool m_muriendo = false;
+private slots:
+    void volverASpriteNormal();
 };
 
 #endif // GOKU_H

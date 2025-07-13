@@ -5,6 +5,9 @@
 #include <QPainter>
 #include "enemigo.h"
 #include <QGraphicsScene>
+#include <QAbstractAnimation>
+#include <QPropertyAnimation>
+#include <QGraphicsOpacityEffect>
 Goku::Goku(QGraphicsItem *parent)
     : Personaje(parent) {
     // Configuración específica de Goku
@@ -53,6 +56,10 @@ Goku::Goku(QGraphicsItem *parent)
     });
     animTimer->start(80); // 80ms = 12.5 FPS
     iniciarAnimacionIdle();
+
+    m_timerGolpe = new QTimer(this);
+    m_timerGolpe->setSingleShot(true);
+    connect(m_timerGolpe, &QTimer::timeout, this, &Goku::volverASpriteNormal);
 }
 
 void Goku::cargarSpritesCaminata() {
@@ -230,10 +237,62 @@ void Goku::iniciarAtaque() {
     }
 }
 void Goku::recibirDano(qreal dano) {
+    if (m_muriendo) return;
+
     salud -= dano;
-    if(salud <= 0) {
-        scene()->removeItem(this);
-        deleteLater();
-        // Aquí podrías agregar game over
+
+    if (salud > 0) {
+        // Guardar sprite actual
+        m_spriteNormal = pixmap();
+
+        // Cambiar a sprite golpeado
+        setPixmap(QPixmap(":/img/Goku/GokuGolpeado.png").scaled(FRAME_WIDTH, FRAME_HEIGHT));
+
+        // Calcular retroceso
+        m_recoilOffset = QPointF((direccion == DERECHA) ? -2.5 : 1, 0);
+        setPos(pos() + m_recoilOffset);
+
+        // Parpadear
+        QGraphicsOpacityEffect* opacityEffect = new QGraphicsOpacityEffect();
+        opacityEffect->setOpacity(0.5);
+        setGraphicsEffect(opacityEffect);
+
+        // Temporizador para restaurar
+        QTimer::singleShot(300, this, [this]() {
+            if (salud > 0 && !m_muriendo) {
+                setGraphicsEffect(nullptr);
+                setPixmap(m_spriteNormal);
+                setPos(pos() - m_recoilOffset);  // Volver a posición original
+                m_golpeado = false;
+            }
+        });
+    } else {
+        // Manejar muerte
+        m_muriendo = true;
+        setPixmap(QPixmap(":/img/Goku/GokuMuerte.png").scaled(FRAME_WIDTH, FRAME_HEIGHT));
+
+        // Deshabilitar físicas y controles
+        velocidad = QPointF(0, 0);
+        setFlag(QGraphicsItem::ItemIsFocusable, false);
+
+        // Animación de caída
+        QPropertyAnimation* fallAnimation = new QPropertyAnimation(this, "pos");
+        fallAnimation->setDuration(1000);
+        fallAnimation->setEndValue(QPointF(x(), scene()->height()));
+        fallAnimation->start(QAbstractAnimation::DeleteWhenStopped);
+
+        // Eliminar después de animación
+        connect(fallAnimation, &QPropertyAnimation::finished, this, [this]() {
+            scene()->removeItem(this);
+            deleteLater();
+            //emit gameOver();
+        });
+    }
+}
+void Goku::volverASpriteNormal() {
+    if (m_golpeado && salud > 0) {
+        setPixmap(m_spriteNormal);
+        setGraphicsEffect(nullptr);  // Eliminar efecto de opacidad
+        m_golpeado = false;
     }
 }
