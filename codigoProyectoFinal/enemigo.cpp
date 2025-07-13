@@ -224,14 +224,26 @@ void Enemigo::lanzarGranadaDespuesDeAtaque() {
     scene()->addItem(granada);
 }
 
+void Enemigo::recibirDano(qreal dano) {
+    salud -= dano;
+    if(salud <= 0) {
+        emit eliminado();  // Emitir señal antes de eliminar
+        scene()->removeItem(this);
+        deleteLater();
+    }
+}
+
+// Modifica manejarColision para usar nuevo sistema:
 void Enemigo::manejarColision(GameObject* otro) {
-    // Implementar lógica de daño
+    // Eliminar esta implementación antigua
+    /*
     salud -= 20;
     if (salud <= 0) {
         // Animación de muerte
         //scene()->removeItem(this);
         deleteLater();
     }
+    */
 }
 
 

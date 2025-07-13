@@ -1,4 +1,5 @@
 #include "personaje.h"
+#include "QGraphicsScene"
 
 Personaje::Personaje(QGraphicsItem *parent)
     : GameObject(parent), attackTimer(nullptr) {
@@ -71,41 +72,51 @@ void Personaje::actualizarGraficos() {
 }
 
 void Personaje::iniciarAtaque() {
-    if(!isAttacking && enSuelo) {
-        isAttacking = true;
-        attackFrame = 0;
-        estado = ATTACKING;
-        velocidad.setX(0);  // Detener movimiento durante ataque
-        // Configurar timer si no existe
-        if(!attackTimer) {
-            attackTimer = new QTimer(this);
-            attackTimer->setSingleShot(true);
-            connect(attackTimer, &QTimer::timeout, this, [this]() {
-                isAttacking = false;
-                attackFrame = 0;
-                estado = IDLE;
-                actualizarGraficos();
-                emit ataqueTerminado();
-            });
-        }
+        if(!isAttacking && enSuelo) {
+            isAttacking = true;
+            attackFrame = 0;
+            estado = ATTACKING;
+            velocidad.setX(0);  // Detener movimiento durante ataque
 
-        // Temporizador para animación de ataque
-        QTimer* frameTimer = new QTimer(this);
-        frameTimer->setSingleShot(false);
-        connect(frameTimer, &QTimer::timeout, this, [this, frameTimer]() {
-            if(attackFrame < TOTAL_ATTACK_FRAMES - 1) {
-                attackFrame++;
-                actualizarGraficos();
-            } else {
-                frameTimer->stop();
-                frameTimer->deleteLater();
+            if(!attackTimer) {
+                attackTimer = new QTimer(this);
+                attackTimer->setSingleShot(true);
+                connect(attackTimer, &QTimer::timeout, this, [this]() {
+                    isAttacking = false;
+                    attackFrame = 0;
+                    estado = IDLE;
+                    actualizarGraficos();
+                    emit ataqueTerminado();
+                });
             }
-        });
-        frameTimer->start(100);  // 10 FPS para ataque
 
-        // Duración total del ataque
-        attackTimer->start(TOTAL_ATTACK_FRAMES * 100);
+            QTimer* frameTimer = new QTimer(this);
+            frameTimer->setSingleShot(false);
+            connect(frameTimer, &QTimer::timeout, this, [this, frameTimer]() {
+                if(attackFrame < TOTAL_ATTACK_FRAMES - 1) {
+                    attackFrame++;
+                    actualizarGraficos();
+                } else {
+                    frameTimer->stop();
+                    frameTimer->deleteLater();
+                }
+            });
+            frameTimer->start(100);
+
+            attackTimer->start(TOTAL_ATTACK_FRAMES * 100);
+        }
+        // REMOVER EL CÓDIGO DE DETECCIÓN DE COLISIONES DE AQUÍ
     }
-}
+
+        // Verificar colisiones con enemigos
+        /*QList<QGraphicsItem*> itemsColisionados = scene()->items(areaAtaque);
+        for(QGraphicsItem* item : itemsColisionados) {
+            if(Enemigo* enemigo = dynamic_cast<Enemigo*>(item)) {
+                enemigo->recibirDano(danoAtaque);
+            }*/
+
+
+
+
 
 

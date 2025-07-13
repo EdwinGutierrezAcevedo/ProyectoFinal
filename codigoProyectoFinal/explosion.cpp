@@ -50,12 +50,10 @@ void Explosion::expandir() {
 
 void Explosion::manejarColision(GameObject* otro) {
     if (auto goku = dynamic_cast<Goku*>(otro)) {
-        // Calcular distancia real
         qreal distancia = QLineF(pos(), goku->pos()).length();
         if (distancia <= m_radioActual) {
-            // Aplicar daño proporcional a la distancia
             qreal factor = 1.0 - (distancia / m_radioActual);
-            //goku->recibirDano(m_dano * factor);
+            goku->recibirDano(m_dano * factor);  // Descomentado y corregido
         }
     }
 }
@@ -63,3 +61,4 @@ void Explosion::manejarColision(GameObject* otro) {
 void Explosion::avanzar(int fase) {
     // No se necesita lógica adicional en cada frame
 }
+

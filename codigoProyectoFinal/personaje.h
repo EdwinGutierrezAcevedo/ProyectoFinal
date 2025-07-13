@@ -66,7 +66,8 @@ protected:
     int idleFrame = 0;
     int TOTAL_IDLE_FRAMES = 0;
     QTimer* idleAnimTimer = nullptr;
-
+    qreal salud = 100;  // Salud base para todos los personajes
+    int danoAtaque = 20;  // Daño base del ataque
 signals:
     void ataqueTerminado();
 

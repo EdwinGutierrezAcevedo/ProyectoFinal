@@ -32,25 +32,41 @@ void Nivel::iniciar() {
 void Nivel::crearEnemigos() {
     if (m_numero == NIVEL1) {
         Enemigo* soldado = new Enemigo(Enemigo::SOLDADO, m_goku);
+        // Corregido: usar 'soldado' en lugar de 'enemigo'
+        connect(soldado, &Enemigo::eliminado, this, [this]() {
+            emit enemigoEliminado();
+        });
         soldado->setPos(390, 90);
         m_scene->addItem(soldado);
         m_enemigos.append(soldado);
     }
     else if (m_numero == NIVEL2) {
         Enemigo* soldado1 = new Enemigo(Enemigo::SOLDADO, m_goku);
+        // Corregido: usar 'soldado1'
+        connect(soldado1, &Enemigo::eliminado, this, [this]() {
+            emit enemigoEliminado();
+        });
         soldado1->setPos(300, 90);
         m_scene->addItem(soldado1);
         m_enemigos.append(soldado1);
 
-        Enemigo* soldado2 = new Enemigo(Enemigo::SOLDADO, m_goku);
+        /*Enemigo* soldado2 = new Enemigo(Enemigo::SOLDADO, m_goku);
+        // Corregido: usar 'soldado2'
+        connect(soldado2, &Enemigo::eliminado, this, [this]() {
+            emit enemigoEliminado();
+        });
         soldado2->setPos(500, 90);
         m_scene->addItem(soldado2);
         m_enemigos.append(soldado2);
 
         Enemigo* jefe = new Enemigo(Enemigo::JEFE, m_goku);
+        // Corregido: usar 'jefe'
+        connect(jefe, &Enemigo::eliminado, this, [this]() {
+            emit enemigoEliminado();
+        });
         jefe->setPos(700, 90);
         m_scene->addItem(jefe);
-        m_enemigos.append(jefe);
+        m_enemigos.append(jefe);*/
     }
 }
 
@@ -70,6 +86,11 @@ void Nivel::verificarCompletado() {
         m_completado = true;
         emit completado();
     }
+    if (m_enemigos.isEmpty() && !m_completado) {
+        m_completado = true;
+        emit completado();
+    }
+
 }
 
 void Nivel::limpiar() {

@@ -56,8 +56,21 @@ void MainWindow::configurarEscena() {
     scene->addItem(goku);
     goku->setFocus();
 
+    scoreText = new QGraphicsTextItem();
+    scoreText->setPlainText("Puntos: 0");
+    scoreText->setDefaultTextColor(Qt::white);
+    scoreText->setFont(QFont("Arial", 16));
+    scoreText->setPos(10, 10);  // Esquina superior izquierda
+    scene->addItem(scoreText);
+
+    connect(nivelActual, &Nivel::enemigoEliminado, this, &MainWindow::actualizarPuntaje);
+
     // Centrar inicialmente en Goku
     ui->graphicsView->centerOn(goku);
+}
+void MainWindow::actualizarPuntaje() {
+    score += 10;  // 10 puntos por enemigo
+    scoreText->setPlainText("Puntos: " + QString::number(score));
 }
 
 void MainWindow::mostrarCompletadoNivel() {

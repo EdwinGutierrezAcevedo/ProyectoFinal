@@ -3,7 +3,8 @@
 #include <QTimer>
 #include <QDebug>
 #include <QPainter>
-
+#include "enemigo.h"
+#include <QGraphicsScene>
 Goku::Goku(QGraphicsItem *parent)
     : Personaje(parent) {
     // Configuración específica de Goku
@@ -205,4 +206,34 @@ void Goku::keyReleaseEvent(QKeyEvent *event) {
 void Goku::manejarColision(GameObject* otro) {
     // Implementar lógica de colisión específica de Goku
     // (Ej: recibir daño, recolectar objetos, etc)
+}
+void Goku::iniciarAtaque() {
+    // Primero llama a la implementación base
+    Personaje::iniciarAtaque();
+
+    if(scene() && isAttacking) {
+        // Calcular área de ataque (delante de Goku)
+        QRectF areaAtaque;
+        if(direccion == DERECHA) {
+            areaAtaque = QRectF(x() + FRAME_WIDTH, y(), FRAME_WIDTH, FRAME_HEIGHT);
+        } else {
+            areaAtaque = QRectF(x() - FRAME_WIDTH, y(), FRAME_WIDTH, FRAME_HEIGHT);
+        }
+
+        // Verificar colisiones con enemigos
+        QList<QGraphicsItem*> itemsColisionados = scene()->items(areaAtaque);
+        for(QGraphicsItem* item : itemsColisionados) {
+            if(Enemigo* enemigo = dynamic_cast<Enemigo*>(item)) {
+                enemigo->recibirDano(danoAtaque);
+            }
+        }
+    }
+}
+void Goku::recibirDano(qreal dano) {
+    salud -= dano;
+    if(salud <= 0) {
+        scene()->removeItem(this);
+        deleteLater();
+        // Aquí podrías agregar game over
+    }
 }

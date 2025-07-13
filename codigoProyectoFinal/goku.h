@@ -13,7 +13,8 @@ public:
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
     void manejarColision(GameObject* otro) override;
-
+    void recibirDano(qreal dano);
+    void iniciarAtaque() override;
 private:
     void actualizarLogica() override;
     //void cargarSprites() override;

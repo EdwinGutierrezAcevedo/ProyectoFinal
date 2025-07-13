@@ -26,10 +26,13 @@ private:
     void iniciarBucleJuego();
     void centrarCamaraEnGoku();
     Nivel* nivelActual;
-    QList<QObject*> elementosTransitorios; // Para guardar elementos de transición
+    QList<QObject*> elementosTransitorios;
+    int score = 0;  // Nuevo: puntuación
+    QGraphicsTextItem* scoreText = nullptr;    // Para guardar elementos de transición
 private slots:
     void mostrarCompletadoNivel();
     void avanzarSiguienteNivel();
+    void actualizarPuntaje();
 };
 
 #endif // MAINWINDOW_H

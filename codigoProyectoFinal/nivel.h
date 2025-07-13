@@ -22,6 +22,7 @@ public:
 
 signals:
     void completado();
+    void enemigoEliminado();
 
 private:
     void crearEnemigos();
