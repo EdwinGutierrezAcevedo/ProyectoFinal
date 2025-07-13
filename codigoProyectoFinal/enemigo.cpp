@@ -1,4 +1,6 @@
 #include "enemigo.h"
+#include "granada.h"
+#include "QGraphicsScene"
 #include <QTimer>
 #include <QtMath>
 #include <QRandomGenerator>
@@ -26,7 +28,7 @@ Enemigo::Enemigo(Tipo tipo, Goku* goku, QGraphicsItem *parent)
         TOTAL_FRAMES = 8;
     }
 
-    cargarSprites();
+    //cargarSprites();
     cargarSpritesAtaque();
     cargarSpritesIdle();
     cargarSpritesCaminata();
@@ -55,11 +57,14 @@ Enemigo::Enemigo(Tipo tipo, Goku* goku, QGraphicsItem *parent)
 
     // Iniciar animación idle
     iniciarAnimacionIdle();
+    connect(this, &Personaje::ataqueTerminado, this, &Enemigo::lanzarGranadaDespuesDeAtaque);
 }
 
+/*
 void Enemigo::cargarSprites() {
 qDebug() << "cargarSprites() llamado - usar cargarSpritesCaminata() en su lugar";
 }
+*/
 
 void Enemigo::cargarSpritesCaminata() {
     framesDerecha.clear();
@@ -118,6 +123,7 @@ void Enemigo::cargarSpritesAtaque() {
         attackFramesDerecha.append(frame);
         attackFramesIzquierda.append(frame.transformed(QTransform().scale(-1, 1)));
     }
+
 }
 
 void Enemigo::cargarSpritesIdle() {
@@ -160,19 +166,11 @@ void Enemigo::actualizarIA(qreal deltaTime) {
 
     tiempoAcumulado += deltaTime;
 
-    /*
-    // Lanzar granada cuando sea el momento
-    if (tiempoAcumulado >= tiempoEntreAtaques) {
-        lanzarGranada();
-        tiempoAcumulado = 0;
-    }
-    */
-
     // Movimiento básico (perseguir a Goku)
     qreal dx = gokuRef->x() - x();  // Diferencia en X
     qreal distanciaX = qAbs(dx);    // Distancia absoluta en X
 
-    if (distanciaX > 100) {  // Mantener distancia mínima en X
+    if (distanciaX > 150) {  // Mantener distancia mínima en X
         // Determinar dirección
         direccion = (dx > 0) ? DERECHA : IZQUIERDA;
 
@@ -187,9 +185,12 @@ void Enemigo::actualizarIA(qreal deltaTime) {
     } else {
         // Detenerse si está cerca
         velocidad.setX(0);
+
         if(tiempoAcumulado >= tiempoEntreAtaques) {
             iniciarAtaque();
+            //lanzarGranada(); // Lanzar granada en lugar de ataque cuerpo a cuerpo
             tiempoAcumulado = 0;
+
         }else {
             // Detenerse si está cerca
             velocidad.setX(0);
@@ -198,12 +199,30 @@ void Enemigo::actualizarIA(qreal deltaTime) {
     }
 }
 
-/*void Enemigo::lanzarGranada() {
+void Enemigo::lanzarGranadaDespuesDeAtaque() {
     if (!gokuRef || !scene()) return;
 
-    Granada* granada = new Granada(pos(), gokuRef->pos());
+    // Calcular dirección hacia Goku
+    qreal dx = gokuRef->x() - x();
+    //qreal dy = gokuRef->y() - y();
+    //qreal distancia = qSqrt(dx*dx + dy*dy);
+
+    // AJUSTE: Reducir velocidad inicial
+    qreal velocidadInicial = 4;
+
+    // Calcular ángulo con parábola más pronunciada
+    qreal angulo = 45.0; // 45 grados para trayectoria parabólica
+    qreal radianes = qDegreesToRadians(angulo);
+
+    // Componentes de velocidad
+    qreal vx = velocidadInicial * qCos(radianes) * (dx > 0 ? 1 : -1);
+    qreal vy = -velocidadInicial * qSin(radianes); // Negativo porque el eje Y crece hacia abajo
+
+    // Crear granada con nueva física
+    Granada* granada = new Granada(QVector2D(vx, vy), 5.0f);
+    granada->setPos(pos());
     scene()->addItem(granada);
-}*/
+}
 
 void Enemigo::manejarColision(GameObject* otro) {
     // Implementar lógica de daño

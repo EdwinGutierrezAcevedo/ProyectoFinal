@@ -16,7 +16,7 @@ public:
 
 private:
     void actualizarLogica() override;
-    void cargarSprites() override;
+    //void cargarSprites() override;
     void cargarSpritesAtaque() override;
     void cargarSpritesIdle() override;
     void cargarSpritesCaminata() override;

@@ -34,7 +34,7 @@ Goku::Goku(QGraphicsItem *parent)
         attackSpriteSheet.fill(Qt::green);
     }
 
-    cargarSprites();
+    //cargarSprites();
     cargarSpritesAtaque();
     cargarSpritesCaminata() ;
     cargarSpritesIdle();
@@ -73,10 +73,11 @@ void Goku::cargarSpritesCaminata() {
     }
 }
 
+/*
 void Goku::cargarSprites() {
  qDebug() << "cargarSprites() llamado - usar cargarSpritesCaminata() en su lugar";
 }
-
+*/
 void Goku::cargarSpritesAtaque() {
     attackFramesDerecha.clear();
     attackFramesIzquierda.clear();

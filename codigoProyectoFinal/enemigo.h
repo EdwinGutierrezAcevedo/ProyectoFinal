@@ -12,11 +12,10 @@ public:
     explicit Enemigo(Tipo tipo, Goku* goku, QGraphicsItem *parent = nullptr);
     void avanzar(int fase) override;
     void manejarColision(GameObject* otro) override;
-    void lanzarGranada();
 
 protected:
     virtual void actualizarIA(qreal deltaTime);
-    void cargarSprites() override;
+    //void cargarSprites() override;
     void cargarSpritesAtaque() override;
     void cargarSpritesIdle() override;
     void cargarSpritesCaminata() override;
@@ -27,6 +26,9 @@ private:
     qreal tiempoAcumulado = 0.0;
     int salud = 100;
     QTimer* walkAnimTimer = nullptr;
+    //void lanzarGranada();
+private slots:
+    void lanzarGranadaDespuesDeAtaque();
 };
 
 #endif // ENEMIGO_H

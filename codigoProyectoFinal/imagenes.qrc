@@ -8,5 +8,7 @@
         <file>img/Soldado/SoldadoAtacando.png</file>
         <file>img/Goku/GokuIdle.png</file>
         <file>img/Goku/GokuAtacando.png</file>
+        <file>img/explosion.png</file>
+        <file>img/granada.png</file>
     </qresource>
 </RCC>

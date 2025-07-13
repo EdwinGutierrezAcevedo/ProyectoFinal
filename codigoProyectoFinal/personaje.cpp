@@ -85,6 +85,7 @@ void Personaje::iniciarAtaque() {
                 attackFrame = 0;
                 estado = IDLE;
                 actualizarGraficos();
+                emit ataqueTerminado();
             });
         }
 

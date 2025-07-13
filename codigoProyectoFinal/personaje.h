@@ -20,7 +20,7 @@ public:
     void manejarColision(GameObject* otro) override = 0;
     virtual void actualizarLogica();
     virtual void actualizarGraficos();
-    virtual void cargarSprites() = 0;
+    //virtual void cargarSprites() = 0;
 
     // Nuevos métodos para ataque
     virtual void iniciarAtaque();
@@ -66,6 +66,9 @@ protected:
     int idleFrame = 0;
     int TOTAL_IDLE_FRAMES = 0;
     QTimer* idleAnimTimer = nullptr;
+
+signals:
+    void ataqueTerminado();
 
 };
 

@@ -13,19 +13,23 @@ SOURCES += \
     explosion.cpp \
     gameobject.cpp \
     goku.cpp \
+    granada.cpp \
     main.cpp \
     mainwindow.cpp \
     nivel.cpp \
-    personaje.cpp
+    personaje.cpp \
+    proyectil.cpp
 
 HEADERS += \
     enemigo.h \
     explosion.h \
     gameobject.h \
     goku.h \
+    granada.h \
     mainwindow.h \
     nivel.h \
-    personaje.h
+    personaje.h \
+    proyectil.h
 
 FORMS += \
     mainwindow.ui

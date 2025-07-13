@@ -129,7 +129,6 @@ void MainWindow::avanzarSiguienteNivel() {
     connect(nivelActual, &Nivel::completado, this, &MainWindow::mostrarCompletadoNivel);
     nivelActual->iniciar();
 
-    // RESTAURAR EL FOCO EN GOKU - Esto soluciona que no se pueda mover
     goku->setFocus();
 }
 
@@ -145,7 +144,7 @@ void MainWindow::iniciarBucleJuego() {
                     obj->avanzar(0);
                 }
             }
-
+            /*
             // Fase 1: Detección de colisiones
             for (auto it = items.begin(); it != items.end(); ++it) {
                 if (auto obj = dynamic_cast<GameObject*>(*it)) {
@@ -158,7 +157,7 @@ void MainWindow::iniciarBucleJuego() {
                     }
                 }
             }
-
+            */
             // Fase 2: Actualización gráfica
             for (auto it = items.begin(); it != items.end(); ++it) {
                 if (auto obj = dynamic_cast<GameObject*>(*it)) {
