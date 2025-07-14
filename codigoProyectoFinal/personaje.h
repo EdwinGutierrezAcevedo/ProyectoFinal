@@ -20,9 +20,7 @@ public:
     void manejarColision(GameObject* otro) override = 0;
     virtual void actualizarLogica();
     virtual void actualizarGraficos();
-    //virtual void cargarSprites() = 0;
 
-    // Nuevos métodos para ataque
     virtual void iniciarAtaque();
     virtual void cargarSpritesAtaque() = 0;  // Obligatorio para personajes atacantes
     virtual void cargarSpritesIdle() = 0;

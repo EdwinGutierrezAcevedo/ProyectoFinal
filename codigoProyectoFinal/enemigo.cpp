@@ -6,7 +6,8 @@
 #include <QRandomGenerator>
 
 Enemigo::Enemigo(Tipo tipo, Goku* goku, QGraphicsItem *parent)
-    : Personaje(parent), tipoEnemigo(tipo), gokuRef(goku) {
+    : Personaje(parent), tipoEnemigo(tipo), gokuRef(goku),
+    iaTimer(nullptr), walkAnimTimer(nullptr), m_timerGolpe(nullptr)  {
 
     // Configurar parámetros según tipo
     if (tipo == SOLDADO) {
@@ -38,7 +39,7 @@ Enemigo::Enemigo(Tipo tipo, Goku* goku, QGraphicsItem *parent)
     direccion = (gokuRef && gokuRef->x() > x()) ? DERECHA : IZQUIERDA;
 
     // Temporizador de comportamiento
-    QTimer* iaTimer = new QTimer(this);
+    iaTimer = new QTimer(this);
     connect(iaTimer, &QTimer::timeout, this, [this]() {
         actualizarIA(0.1);  // Actualizar IA cada 100ms
     });
@@ -64,11 +65,29 @@ Enemigo::Enemigo(Tipo tipo, Goku* goku, QGraphicsItem *parent)
     connect(m_timerGolpe, &QTimer::timeout, this, &Enemigo::volverASpriteNormal);
 }
 
-/*
-void Enemigo::cargarSprites() {
-qDebug() << "cargarSprites() llamado - usar cargarSpritesCaminata() en su lugar";
+Enemigo::~Enemigo() {
+    // Detener y eliminar temporizadores
+    if (iaTimer) {
+        iaTimer->stop();
+        delete iaTimer;
+        iaTimer = nullptr;
+    }
+
+    if (walkAnimTimer) {
+        walkAnimTimer->stop();
+        delete walkAnimTimer;
+        walkAnimTimer = nullptr;
+    }
+
+    if (m_timerGolpe) {
+        m_timerGolpe->stop();
+        delete m_timerGolpe;
+        m_timerGolpe = nullptr;
+    }
+
+    // Desconectar todas las señales
+    disconnect(this, 0, 0, 0);
 }
-*/
 
 void Enemigo::cargarSpritesCaminata() {
     framesDerecha.clear();
@@ -166,7 +185,7 @@ void Enemigo::avanzar(int fase) {
 }
 
 void Enemigo::actualizarIA(qreal deltaTime) {
-    if (!gokuRef || !scene()) return;
+    if (!gokuRef || !scene() ||  !gokuRef->scene()) return;
 
     tiempoAcumulado += deltaTime;
 
@@ -192,7 +211,7 @@ void Enemigo::actualizarIA(qreal deltaTime) {
 
         if(tiempoAcumulado >= tiempoEntreAtaques) {
             iniciarAtaque();
-            //lanzarGranada(); // Lanzar granada en lugar de ataque cuerpo a cuerpo
+            //lanzarGranada(); // Lanzar granada
             tiempoAcumulado = 0;
 
         }else {
@@ -208,10 +227,7 @@ void Enemigo::lanzarGranadaDespuesDeAtaque() {
 
     // Calcular dirección hacia Goku
     qreal dx = gokuRef->x() - x();
-    //qreal dy = gokuRef->y() - y();
-    //qreal distancia = qSqrt(dx*dx + dy*dy);
 
-    // AJUSTE: Reducir velocidad inicial
     qreal velocidadInicial = 4;
 
     // Calcular ángulo con parábola más pronunciada
@@ -248,7 +264,6 @@ void Enemigo::recibirDano(qreal dano) {
             if (salud > 0) setPixmap(original);
         });
     } else {
-        // Misma lógica para JEFE...
     }
 
     // Iniciar temporizador para volver a normal
@@ -257,8 +272,12 @@ void Enemigo::recibirDano(qreal dano) {
     }
 
     if (salud <= 0) {
-        emit eliminado();
-        scene()->removeItem(this);
+        // Desconectar antes de eliminar
+        disconnect(this, 0, 0, 0);
+
+        if (scene()) {
+            scene()->removeItem(this);
+        }
         deleteLater();
     }
 }
@@ -270,15 +289,7 @@ void Enemigo::volverASpriteNormal() {
 
 // Modifica manejarColision para usar nuevo sistema:
 void Enemigo::manejarColision(GameObject* otro) {
-    // Eliminar esta implementación antigua
-    /*
-    salud -= 20;
-    if (salud <= 0) {
-        // Animación de muerte
-        //scene()->removeItem(this);
-        deleteLater();
-    }
-    */
+
 }
 
 

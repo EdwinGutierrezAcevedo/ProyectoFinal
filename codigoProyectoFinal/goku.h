@@ -15,15 +15,17 @@ public:
     void manejarColision(GameObject* otro) override;
     void recibirDano(qreal dano);
     void iniciarAtaque() override;
+    ~Goku();
+    void resetear();
 private:
     void actualizarLogica() override;
-    //void cargarSprites() override;
     void cargarSpritesAtaque() override;
     void cargarSpritesIdle() override;
     void cargarSpritesCaminata() override;
 
     bool m_golpeado = false;
     QTimer* m_timerGolpe = nullptr;
+    QTimer* animTimer = nullptr;
     QPixmap m_spriteNormal;
 
     QPointF m_recoilOffset;  // Almacenar desplazamiento de retroceso
@@ -32,6 +34,9 @@ private:
     bool m_muriendo = false;
 private slots:
     void volverASpriteNormal();
+
+signals:
+    void gameOver();
 };
 
 #endif // GOKU_H

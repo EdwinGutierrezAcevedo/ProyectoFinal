@@ -7,6 +7,7 @@ Personaje::Personaje(QGraphicsItem *parent)
 
 Personaje::~Personaje() {
     if(attackTimer) delete attackTimer;
+    //if(idleAnimTimer) delete idleAnimTimer;
 }
 
 void Personaje::iniciarAnimacionIdle() {
@@ -105,16 +106,7 @@ void Personaje::iniciarAtaque() {
 
             attackTimer->start(TOTAL_ATTACK_FRAMES * 100);
         }
-        // REMOVER EL CÓDIGO DE DETECCIÓN DE COLISIONES DE AQUÍ
-    }
-
-        // Verificar colisiones con enemigos
-        /*QList<QGraphicsItem*> itemsColisionados = scene()->items(areaAtaque);
-        for(QGraphicsItem* item : itemsColisionados) {
-            if(Enemigo* enemigo = dynamic_cast<Enemigo*>(item)) {
-                enemigo->recibirDano(danoAtaque);
-            }*/
-
+}
 
 
 

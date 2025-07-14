@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Iniciar con nivel 1
     nivelActual = new Nivel(Nivel::NIVEL1, goku, scene, this);
     connect(nivelActual, &Nivel::completado, this, &MainWindow::mostrarCompletadoNivel);
+    connect(goku, &Goku::gameOver, this, &MainWindow::mostrarGameOver);
     nivelActual->iniciar();
 
     // Iniciar bucle del juego
@@ -48,7 +49,6 @@ void MainWindow::configurarEscena() {
     const int SCENE_HEIGHT = 600; // Alto extendido
 
     scene->setSceneRect(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
-
     // Crear personaje principal (Goku)
     goku = new Goku();
     qDebug() << "se creo goku";
@@ -61,67 +61,109 @@ void MainWindow::configurarEscena() {
 }
 
 void MainWindow::mostrarCompletadoNivel() {
-    // Obtener el centro de la vista (que es donde está Goku)
     QRectF viewRect = ui->graphicsView->mapToScene(ui->graphicsView->viewport()->geometry()).boundingRect();
     QPointF center = viewRect.center();
 
-    // Mostrar texto de nivel completado
     QGraphicsTextItem* texto = new QGraphicsTextItem();
-    texto->setPlainText(QString("Nivel %1 Superado!").arg(nivelActual->numero() + 1));
+
+    // Verificar si es el último nivel (nivel 2)
+    if (nivelActual->numero() == Nivel::NIVEL2) {
+        texto->setPlainText("Juego terminado");
+    } else {
+        texto->setPlainText(QString("Nivel %1 Superado!").arg(nivelActual->numero() + 1));
+    }
+
     texto->setDefaultTextColor(Qt::yellow);
     texto->setFont(QFont("Arial", 24, QFont::Bold));
-
-    // Centrar el texto en la vista
     QRectF textRect = texto->boundingRect();
     texto->setPos(center.x() - textRect.width()/2, center.y() - 50);
     scene->addItem(texto);
 
-    // Crear botón para siguiente nivel
-    QPushButton* botonSiguiente = new QPushButton();
-    botonSiguiente->setText("Ir al Nivel " + QString::number(nivelActual->numero() + 2));
-    botonSiguiente->setStyleSheet("background-color: #FF5500; color: white; font-weight: bold;");
-    botonSiguiente->setFixedSize(200, 50);
+    QPushButton* botonAccion = new QPushButton();
 
-    QGraphicsProxyWidget* proxy = scene->addWidget(botonSiguiente);
-    // Centrar el botón debajo del texto
+    if (nivelActual->numero() == Nivel::NIVEL2) {
+        botonAccion->setText("Reiniciar Juego");
+    } else {
+        botonAccion->setText("Ir al Nivel " + QString::number(nivelActual->numero() + 2));
+    }
+
+    botonAccion->setStyleSheet("background-color: #FF5500; color: white; font-weight: bold;");
+    botonAccion->setFixedSize(200, 50);
+
+    QGraphicsProxyWidget* proxy = scene->addWidget(botonAccion);
     proxy->setPos(center.x() - 100, center.y() + 20);
 
-    // Guardar elementos en variables miembro para limpieza posterior
     elementosTransitorios.append(texto);
     elementosTransitorios.append(proxy);
 
-    connect(botonSiguiente, &QPushButton::clicked, this, [this](){
-        // Limpiar elementos de transición
-        auto it = elementosTransitorios.begin();
-        while (it != elementosTransitorios.end()) {
-            QObject* item = *it;
-            if (QGraphicsItem* gi = dynamic_cast<QGraphicsItem*>(item)) {
-                scene->removeItem(gi);
-                delete gi;
-                it = elementosTransitorios.erase(it); // Eliminar de la lista y avanzar
-            }
-            else if (QGraphicsProxyWidget* proxy = dynamic_cast<QGraphicsProxyWidget*>(item)) {
-                scene->removeItem(proxy);
-                proxy->deleteLater();
-                it = elementosTransitorios.erase(it); // Eliminar de la lista y avanzar
-            } else {
-                ++it; // Avanzar sin eliminar
-            }
-        }
-        elementosTransitorios.clear();
+    // Conectar según el tipo de acción
+    if (nivelActual->numero() == Nivel::NIVEL2) {
+        connect(botonAccion, &QPushButton::clicked, this, [this](){
+            limpiarElementosTransitorios();
+            reiniciarJuego();
+        });
+    } else {
+        connect(botonAccion, &QPushButton::clicked, this, [this](){
+            limpiarElementosTransitorios();
+            avanzarSiguienteNivel();
+        });
+    }
+}
 
-        // Avanzar al siguiente nivel
-        avanzarSiguienteNivel();
+void MainWindow::mostrarGameOver() {
+    // Limpiar nivel actual
+    if (nivelActual) {
+        nivelActual->limpiar();
+        delete nivelActual;
+        nivelActual = nullptr;
+    }
+
+    // Detener bucle de juego
+    if (gameTimer && gameTimer->isActive()) {
+        gameTimer->stop();
+    }
+
+    // Obtener centro de la vista
+    QRectF viewRect = ui->graphicsView->mapToScene(ui->graphicsView->viewport()->geometry()).boundingRect();
+    QPointF center = viewRect.center();
+
+    // Mostrar texto de juego terminado
+    QGraphicsTextItem* texto = new QGraphicsTextItem();
+    texto->setPlainText("Juego terminado");
+    texto->setDefaultTextColor(Qt::red);
+    texto->setFont(QFont("Arial", 24, QFont::Bold));
+
+    QRectF textRect = texto->boundingRect();
+    texto->setPos(center.x() - textRect.width()/2, center.y() - 50);
+    scene->addItem(texto);
+
+    // Crear botón para reiniciar
+    QPushButton* botonReiniciar = new QPushButton();
+    botonReiniciar->setText("Reiniciar Juego");
+    botonReiniciar->setStyleSheet("background-color: #FF5500; color: white; font-weight: bold;");
+    botonReiniciar->setFixedSize(200, 50);
+
+    QGraphicsProxyWidget* proxy = scene->addWidget(botonReiniciar);
+    proxy->setPos(center.x() - 100, center.y() + 20);
+
+    // Guardar elementos en lista para limpieza
+    elementosTransitorios.append(texto);
+    elementosTransitorios.append(proxy);
+
+    connect(botonReiniciar, &QPushButton::clicked, this, [this](){
+        limpiarElementosTransitorios();
+        reiniciarJuego();
     });
 }
 
 void MainWindow::avanzarSiguienteNivel() {
     // Guardar número antes de eliminar
     int numSiguiente = nivelActual->numero() + 1;
+    if (numSiguiente > Nivel::NIVEL2) return;
 
     // Limpiar nivel actual
     nivelActual->limpiar();
-    delete nivelActual;
+    delete nivelActual;  // Esto llama al destructor que marca m_destruyendo
     nivelActual = nullptr;
 
     // Crear nuevo nivel
@@ -132,8 +174,66 @@ void MainWindow::avanzarSiguienteNivel() {
     goku->setFocus();
 }
 
+void MainWindow::reiniciarJuego() {
+    // Limpiar elementos transitorios (si existen)
+    limpiarElementosTransitorios();
+
+    // Limpiar nivel actual si existe
+    if (nivelActual) {
+        nivelActual->limpiar();
+        delete nivelActual;
+        nivelActual = nullptr;
+    }
+
+    // Eliminar Goku viejo (si existe)
+    if (goku) {
+        scene->removeItem(goku);
+        delete goku;
+        goku = nullptr;
+    }
+
+    // Crear nuevo Goku
+    goku = new Goku();
+    goku->setPos(90, 90);
+    scene->addItem(goku);
+    goku->setFocus();
+    connect(goku, &Goku::gameOver, this, &MainWindow::mostrarGameOver);
+
+    // Crear nuevo nivel 1
+    nivelActual = new Nivel(Nivel::NIVEL1, goku, scene, this);
+    connect(nivelActual, &Nivel::completado, this, &MainWindow::mostrarCompletadoNivel);
+    nivelActual->iniciar();
+
+    // Centrar vista en Goku
+    ui->graphicsView->centerOn(goku);
+
+    // Reiniciar bucle de juego si estaba detenido
+    if (gameTimer && !gameTimer->isActive()) {
+        gameTimer->start();
+    }
+}
+
+void MainWindow::limpiarElementosTransitorios() {
+    for (auto* item : elementosTransitorios) {
+        if (auto* gi = dynamic_cast<QGraphicsItem*>(item)) {
+            scene->removeItem(gi);
+            delete gi;
+        }
+        else if (auto* proxy = dynamic_cast<QGraphicsProxyWidget*>(item)) {
+            // Eliminar widget primero
+            if (proxy->widget()) {
+                delete proxy->widget();
+            }
+            scene->removeItem(proxy);
+            delete proxy;
+        }
+    }
+    elementosTransitorios.clear();
+}
+
+
 void MainWindow::iniciarBucleJuego() {
-    QTimer* gameTimer = new QTimer(this);
+    gameTimer = new QTimer(this);
     connect(gameTimer, &QTimer::timeout, this, [this]() {
         // Solo actualizar si no estamos en transición entre niveles
         if (nivelActual && !nivelActual->estaCompletado()) {
@@ -144,20 +244,6 @@ void MainWindow::iniciarBucleJuego() {
                     obj->avanzar(0);
                 }
             }
-            /*
-            // Fase 1: Detección de colisiones
-            for (auto it = items.begin(); it != items.end(); ++it) {
-                if (auto obj = dynamic_cast<GameObject*>(*it)) {
-                    // Verificar colisiones con otros objetos
-                    const QList<QGraphicsItem*> itemsColisionados = obj->collidingItems();
-                    for (auto colIt = itemsColisionados.begin(); colIt != itemsColisionados.end(); ++colIt) {
-                        if (auto otroObj = dynamic_cast<GameObject*>(*colIt)) {
-                            obj->manejarColision(otroObj);
-                        }
-                    }
-                }
-            }
-            */
             // Fase 2: Actualización gráfica
             for (auto it = items.begin(); it != items.end(); ++it) {
                 if (auto obj = dynamic_cast<GameObject*>(*it)) {

@@ -13,7 +13,7 @@ public:
     void avanzar(int fase) override;
     void manejarColision(GameObject* otro) override;
     void recibirDano(qreal dano)  ;
-
+    ~Enemigo();
 protected:
     virtual void actualizarIA(qreal deltaTime);
     //void cargarSprites() override;
@@ -31,6 +31,7 @@ private:
     qreal m_salud;
     bool m_golpeado;  // Estado de golpeado
     QTimer* m_timerGolpe;
+    QTimer* iaTimer;
     //void lanzarGranada();
 private slots:
     void lanzarGranadaDespuesDeAtaque();

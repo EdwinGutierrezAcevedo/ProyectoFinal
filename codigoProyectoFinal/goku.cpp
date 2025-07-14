@@ -38,7 +38,6 @@ Goku::Goku(QGraphicsItem *parent)
         attackSpriteSheet.fill(Qt::green);
     }
 
-    //cargarSprites();
     cargarSpritesAtaque();
     cargarSpritesCaminata() ;
     cargarSpritesIdle();
@@ -46,7 +45,7 @@ Goku::Goku(QGraphicsItem *parent)
     setFlag(QGraphicsItem::ItemIsFocusable);
 
     // Temporizador para animación
-    QTimer* animTimer = new QTimer(this);
+    animTimer = new QTimer(this);
     connect(animTimer, &QTimer::timeout, this, [this]() {
         // Avanzar animación solo para caminar e idle
         if(estado == WALKING || estado == IDLE) {
@@ -60,6 +59,60 @@ Goku::Goku(QGraphicsItem *parent)
     m_timerGolpe = new QTimer(this);
     m_timerGolpe->setSingleShot(true);
     connect(m_timerGolpe, &QTimer::timeout, this, &Goku::volverASpriteNormal);
+
+}
+
+void Goku::resetear() {
+    // Restaurar propiedades físicas
+    GRAVEDAD = 0.5;
+    VELOCIDAD_CAMINAR = 5;
+    FUERZA_SALTO = -10;
+
+    // Restaurar estado del personaje
+    salud = 100;
+    velocidad = QPointF(0, 0);
+    enSuelo = true;
+    estado = IDLE;
+    direccion = DERECHA;
+    isAttacking = false;
+    m_golpeado = false;
+    m_muriendo = false;
+    currentFrame = 0;
+    setFlag(QGraphicsItem::ItemIsFocusable, true);
+    setFocus();
+    // Restaurar gráficos
+    if (direccion == DERECHA) {
+        setPixmap(idleFramesDerecha.first());
+    } else {
+        setPixmap(idleFramesIzquierda.first());
+    }
+
+    // Eliminar cualquier efecto gráfico activo
+    setGraphicsEffect(nullptr);
+
+    // Reiniciar animaciones
+    iniciarAnimacionIdle();
+
+    // Restaurar posición inicial
+    setPos(90, 90);
+}
+
+Goku::~Goku() {
+    // Detener y eliminar temporizadores
+    if (animTimer) {
+        animTimer->stop();
+        delete animTimer;
+        animTimer = nullptr;
+    }
+
+    if (m_timerGolpe) {
+        m_timerGolpe->stop();
+        delete m_timerGolpe;
+        m_timerGolpe = nullptr;
+    }
+
+    // Desconectar todas las señales
+    disconnect(this, 0, 0, 0);
 }
 
 void Goku::cargarSpritesCaminata() {
@@ -81,11 +134,6 @@ void Goku::cargarSpritesCaminata() {
     }
 }
 
-/*
-void Goku::cargarSprites() {
- qDebug() << "cargarSprites() llamado - usar cargarSpritesCaminata() en su lugar";
-}
-*/
 void Goku::cargarSpritesAtaque() {
     attackFramesDerecha.clear();
     attackFramesIzquierda.clear();
@@ -109,7 +157,6 @@ void Goku::cargarSpritesIdle() {
         idleFramesDerecha.append(frame);
         idleFramesIzquierda.append(frame.transformed(QTransform().scale(-1, 1)));
     }
-    qDebug() << "cargarSprites() llamado - usar cargarSpritesCaminata() en su lugar";
 }
 
 void Goku::avanzar(int fase) {
@@ -210,10 +257,6 @@ void Goku::keyReleaseEvent(QKeyEvent *event) {
     }
 }
 
-void Goku::manejarColision(GameObject* otro) {
-    // Implementar lógica de colisión específica de Goku
-    // (Ej: recibir daño, recolectar objetos, etc)
-}
 void Goku::iniciarAtaque() {
     // Primero llama a la implementación base
     Personaje::iniciarAtaque();
@@ -222,9 +265,9 @@ void Goku::iniciarAtaque() {
         // Calcular área de ataque (delante de Goku)
         QRectF areaAtaque;
         if(direccion == DERECHA) {
-            areaAtaque = QRectF(x() + FRAME_WIDTH, y(), FRAME_WIDTH, FRAME_HEIGHT);
+            areaAtaque = QRectF(x() + FRAME_WIDTH, y(), 20, 20);
         } else {
-            areaAtaque = QRectF(x() - FRAME_WIDTH, y(), FRAME_WIDTH, FRAME_HEIGHT);
+            areaAtaque = QRectF(x() - FRAME_WIDTH, y(), 20, 20);
         }
 
         // Verificar colisiones con enemigos
@@ -283,9 +326,9 @@ void Goku::recibirDano(qreal dano) {
 
         // Eliminar después de animación
         connect(fallAnimation, &QPropertyAnimation::finished, this, [this]() {
-            scene()->removeItem(this);
-            deleteLater();
-            //emit gameOver();
+            //scene()->removeItem(this);
+            //deleteLater();
+            emit gameOver();
         });
     }
 }
@@ -295,4 +338,8 @@ void Goku::volverASpriteNormal() {
         setGraphicsEffect(nullptr);  // Eliminar efecto de opacidad
         m_golpeado = false;
     }
+}
+
+void Goku::manejarColision(GameObject* otro) {
+
 }

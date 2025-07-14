@@ -6,21 +6,17 @@ Nivel::Nivel(Nivel::NumeroNivel numero, Goku* goku, QGraphicsScene* scene, QObje
     m_completado(false), m_verificador(nullptr) {}
 
 Nivel::~Nivel() {
-    limpiar();
+    limpiar(); // Ya detiene el verificador
+
+    // Eliminar directamente
     if (m_verificador) {
-        m_verificador->stop();
-        m_verificador->deleteLater();
+        delete m_verificador;
+        m_verificador = nullptr;
     }
 }
 
 void Nivel::iniciar() {
-    // Configurar fondo según el nivel
-    QString fondo = (m_numero == NIVEL1) ? ":/img/Base.gif" : ":/img/Base.gif";
-    m_scene->setBackgroundBrush(QBrush(QPixmap(fondo)));
-
-    // Crear enemigos
     crearEnemigos();
-
     // Temporizador para verificar si el nivel está completado
     if (!m_verificador) {
         m_verificador = new QTimer(this);
@@ -30,27 +26,30 @@ void Nivel::iniciar() {
 }
 
 void Nivel::crearEnemigos() {
+    m_enemigos.clear();
+
     if (m_numero == NIVEL1) {
+        Enemigo* soldado0 = new Enemigo(Enemigo::SOLDADO, m_goku);
+        connect(soldado0, &Enemigo::eliminado, this, &Nivel::verificarCompletado);
+        soldado0->setPos(390, 90);
+        m_scene->addItem(soldado0);
+        m_enemigos.append(soldado0);
+    }
+
+    else if (m_numero == NIVEL2) {
         Enemigo* soldado = new Enemigo(Enemigo::SOLDADO, m_goku);
-        // Corregido: usar 'soldado' en lugar de 'enemigo'
-        connect(soldado, &Enemigo::eliminado, this, [this]() {
-            emit enemigoEliminado();
-        });
+        connect(soldado, &Enemigo::eliminado, this, &Nivel::verificarCompletado);
         soldado->setPos(390, 90);
         m_scene->addItem(soldado);
         m_enemigos.append(soldado);
-    }
-    else if (m_numero == NIVEL2) {
         Enemigo* soldado1 = new Enemigo(Enemigo::SOLDADO, m_goku);
-        // Corregido: usar 'soldado1'
-        connect(soldado1, &Enemigo::eliminado, this, [this]() {
-            emit enemigoEliminado();
-        });
-        soldado1->setPos(300, 90);
+        connect(soldado1, &Enemigo::eliminado, this, &Nivel::verificarCompletado);
+        soldado1->setPos(490, 90);
         m_scene->addItem(soldado1);
         m_enemigos.append(soldado1);
-
-        /*Enemigo* soldado2 = new Enemigo(Enemigo::SOLDADO, m_goku);
+    }
+    /*
+        Enemigo* soldado2 = new Enemigo(Enemigo::SOLDADO, m_goku);
         // Corregido: usar 'soldado2'
         connect(soldado2, &Enemigo::eliminado, this, [this]() {
             emit enemigoEliminado();
@@ -58,7 +57,7 @@ void Nivel::crearEnemigos() {
         soldado2->setPos(500, 90);
         m_scene->addItem(soldado2);
         m_enemigos.append(soldado2);
-
+        /*
         Enemigo* jefe = new Enemigo(Enemigo::JEFE, m_goku);
         // Corregido: usar 'jefe'
         connect(jefe, &Enemigo::eliminado, this, [this]() {
@@ -67,7 +66,7 @@ void Nivel::crearEnemigos() {
         jefe->setPos(700, 90);
         m_scene->addItem(jefe);
         m_enemigos.append(jefe);*/
-    }
+
 }
 
 void Nivel::verificarCompletado() {
@@ -86,18 +85,21 @@ void Nivel::verificarCompletado() {
         m_completado = true;
         emit completado();
     }
-    if (m_enemigos.isEmpty() && !m_completado) {
-        m_completado = true;
-        emit completado();
-    }
-
 }
 
 void Nivel::limpiar() {
-    // Eliminar enemigos de la escena y memoria
+    // Detener verificador primero
+    if (m_verificador) {
+        m_verificador->stop();
+    }
+
+    // Eliminar enemigos
     for (Enemigo* enemigo : m_enemigos) {
         if (enemigo) {
-            if (m_scene->items().contains(enemigo)) {
+            // Desconectar señales específicas
+            disconnect(enemigo, &Enemigo::eliminado, this, 0);
+
+            if (m_scene && m_scene->items().contains(enemigo)) {
                 m_scene->removeItem(enemigo);
             }
             delete enemigo;

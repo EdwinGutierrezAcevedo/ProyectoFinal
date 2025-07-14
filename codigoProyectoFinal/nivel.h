@@ -34,6 +34,7 @@ private:
     bool m_completado;
     QList<Enemigo*> m_enemigos;
     QTimer* m_verificador;
+
 };
 
 #endif // NIVEL_H
