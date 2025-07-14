@@ -177,6 +177,16 @@ void Goku::actualizarLogica() {
     // Actualizar posición
     setPos(x() + velocidad.x(), y() + velocidad.y());
 
+    const qreal sceneWidth = scene()->width();
+    const qreal playerWidth = boundingRect().width();
+
+    // Limitar movimiento horizontal
+    if (x() < 0) {
+        setX(0);
+    } else if (x() + playerWidth > sceneWidth) {
+        setX(sceneWidth - playerWidth);
+    }
+
     // Verificar colisión con suelo
     if(y() >= 90) { // Ajustado a la nueva escena
         setY(90);
